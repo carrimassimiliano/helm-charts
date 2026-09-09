@@ -58,3 +58,4 @@ backup:
   # mai funzionato). Ora il CronJob referenzia i valori già definiti sopra.
   schedule: "*/5 * * * *"
   retentionDays: 7
+global: {}
