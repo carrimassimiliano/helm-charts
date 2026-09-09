@@ -13,7 +13,7 @@ entries:
       licenses: Apache-2.0
     apiVersion: v2
     appVersion: 2024.6.29
-    created: "2026-09-06T18:21:04.584386837+02:00"
+    created: "2026-09-09T13:54:04.943538528+02:00"
     dependencies:
     - name: common
       repository: oci://registry-1.docker.io/bitnamicharts
@@ -39,15 +39,15 @@ entries:
     sources:
     - https://github.com/bitnami/charts/tree/main/bitnami/minio
     urls:
-    - minio-14.6.16.tgz
+    - https://carrimassimiliano.github.io/helm-charts/minio-14.6.16.tgz
     version: 14.6.16
   pytube-ultimate:
   - apiVersion: v2
-    appVersion: 1.0.0
-    created: "2026-09-06T18:21:04.584656673+02:00"
+    appVersion: 2.0.0
+    created: "2026-09-09T13:54:04.94378083+02:00"
     description: Un'applicazione Kubernetes per scaricare, tagliare e archiviare musica
       da YouTube.
-    digest: c400c756400195dc113cc21dd0bad7019825abd5bbb06693eab3b60c368c5fd4
+    digest: b424e3494a800e2534504fc1ad0dc14b626085fa998b46bf7902b108c93cd77e
     keywords:
     - youtube-dl
     - ffmpeg
@@ -56,14 +56,14 @@ entries:
     name: pytube-ultimate
     type: application
     urls:
-    - pytube-ultimate-0.2.2.tgz
-    version: 0.2.2
+    - https://carrimassimiliano.github.io/helm-charts/pytube-ultimate-0.2.4.tgz
+    version: 0.2.4
   sealed-secrets:
   - annotations:
       category: DeveloperTools
     apiVersion: v2
     appVersion: 0.37.0
-    created: "2026-09-06T18:21:04.585744531+02:00"
+    created: "2026-09-09T13:54:04.945384728+02:00"
     description: Helm chart for the sealed-secrets controller.
     digest: 4af8cb2b150b83460f15242e36706159cb77f6ba834f79a7bd172cb2f5debc72
     home: https://github.com/bitnami-labs/sealed-secrets
@@ -80,6 +80,6 @@ entries:
     - https://github.com/bitnami-labs/sealed-secrets
     type: application
     urls:
-    - sealed-secrets-2.18.6.tgz
+    - https://carrimassimiliano.github.io/helm-charts/sealed-secrets-2.18.6.tgz
     version: 2.18.6
-generated: "2026-09-06T18:21:04.581683009+02:00"
+generated: "2026-09-09T13:54:04.938329667+02:00"
