@@ -14,13 +14,13 @@ spec:
       labels:
         app: {{ .Release.Name }}-backend
     spec:
-      {{- with .Values.imagePullSecrets }}
       securityContext:
          runAsNonRoot: true
          runAsUser: {{ .Values.global.uid | default 1000 }}
          runAsGroup: {{ .Values.global.gid | default 1000 }}
          fsGroup: {{ .Values.global.gid | default 1000 }}
 
+      {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
