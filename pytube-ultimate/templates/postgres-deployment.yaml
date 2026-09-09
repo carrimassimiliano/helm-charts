@@ -1,0 +1,170 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-postgres
+spec:
+  serviceName: "postgres-service"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        fsGroup: 999
+      initContainers:
+      - name: fix-permissions
+        image: busybox
+        command: ["sh", "-c", "chown -R 999:999 /var/lib/postgresql/data"]
+        volumeMounts:
+        - name: db-storage
+          mountPath: /var/lib/postgresql/data
+        securityContext:
+          runAsUser: 0
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        securityContext:
+          runAsUser: 999
+          runAsGroup: 999
+          allowPrivilegeEscalation: false
+        env:
+        - name: POSTGRES_DB
+          value: {{ .Values.postgres.db | quote }}
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-secret
+              key: DB_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-secret
+              key: DB_PASS
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: db-storage
+          mountPath: /var/lib/postgresql/data
+  
+
+  volumeClaimTemplates:
+  - metadata:
+      name: db-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: ""
+      resources:
+        requests:
+          storage: {{ .Values.postgres.storage }}
+      volumeName: pytube-postgres-pv
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+spec:
+  selector:
+    app: postgres
+  ports:
+  - protocol: TCP
+    port: 5432
+    targetPort: 5432
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-backup-pv
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    server: 192.168.1.247
+    path: /mnt/seagate2T/pytube_backup
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-backup-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ""
+  resources:
+    requests:
+      storage: 5Gi
+  volumeName: postgres-backup-pv
+
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup
+spec:
+  schedule: "*/5 * * * *"
+  concurrencyPolicy: Replace
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          securityContext:
+            runAsUser: 999
+            runAsGroup: 999
+            fsGroup: 999
+          initContainers:
+          - name: fix-permissions
+            image: busybox
+            command: ["sh", "-c", "chown -R 999:999 /backup"]
+            volumeMounts:
+            - name: backup-storage
+              mountPath: /backup
+            securityContext:
+              runAsUser: 0
+          containers:
+          - name: postgres-backup
+            image: postgres:15-alpine
+            securityContext:
+              allowPrivilegeEscalation: false
+            env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secret
+                  key: DB_PASS
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secret
+                  key: DB_USER
+            - name: POSTGRES_DB
+              value: {{ .Values.postgres.db | quote }}
+            - name: POSTGRES_HOST
+              value: "postgres-service"
+            command:
+            - /bin/sh
+            - -c
+            - |
+              FILENAME="backup_$(date +%Y%m%d_%H%M%S).sql"
+              echo "Inizio backup in $FILENAME..."
+              pg_dump -h $POSTGRES_HOST -U $POSTGRES_USER $POSTGRES_DB > /backup/$FILENAME
+              echo "Backup completato."
+              find /backup -name "backup_*.sql" -mtime +7 -delete
+            volumeMounts:
+            - name: backup-storage
+              mountPath: /backup
+          restartPolicy: OnFailure
+          volumes:
+          - name: backup-storage
+            persistentVolumeClaim:
+              claimName: postgres-backup-pvc

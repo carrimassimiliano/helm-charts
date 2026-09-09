@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-backend
+  labels:
+    app: {{ .Release.Name }}-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-backend
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-backend
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      securityContext:
+         runAsNonRoot: true
+         runAsUser: {{ .Values.global.uid | default 1000 }}
+         runAsGroup: {{ .Values.global.gid | default 1000 }}
+         fsGroup: {{ .Values.global.gid | default 1000 }}
+
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: pytube-server
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          imagePullPolicy: {{ .Values.backend.imagePullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+          env:
+            # Prima: value in chiaro dal values.yaml. Ora: letto a runtime dal
+            # Secret pytube-ultimate-users-secret, generato una volta con kubeseal
+            # (vedi passaggi precedenti) e mai presente in chiaro nel repo.
+            - name: USERS_CONFIG
+              valueFrom:
+                secretKeyRef:
+                  name: pytube-ultimate-users-secret
+                  key: users-config
+            - name: REDIS_HOST
+              value: "{{ .Release.Name }}-redis"
+            - name: DB_USER
+              value: {{ .Values.postgres.user | quote }}
+            # Stesso discorso per la password del DB: niente più
+            # {{ .Values.postgres.password }} nel manifest o nel values.yaml.
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: pytube-ultimate-postgres-secret
+                  key: password
+            - name: DB_NAME
+              value: {{ .Values.postgres.db | quote }}
+            - name: DB_HOST
+              value: "{{ .Release.Name }}-postgres"    
+            - name: TEMPO_ENDPOINT
+              value: "http://tempo.monitoring.svc.cluster.local:4317"
+            - name: PYTHONUNBUFFERED
+              value: "1"
+
+
+          ports:
+            - containerPort: 8000
+          volumeMounts:
+            - name: storage-volume
+              mountPath: /app/pytube
+      volumes:
+        - name: storage-volume
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-data

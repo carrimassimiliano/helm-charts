@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-frontend
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-frontend
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      securityContext:
+        runAsNonRoot: true
+        # nginx-unprivileged usa UID 101 internamente
+        runAsUser: 101
+        runAsGroup: 101
+
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+          allowPrivilegeEscalation: false
+
+      containers:
+        - name: frontend
+          # Prima: immagine fissa "pytube-frontend:latest" con imagePullPolicy: Never,
+          # cioè "usa SOLO l'immagine già presente in locale sul nodo, non scaricarla
+          # mai". Funzionava solo perché probabilmente la costruivi a mano sullo
+          # stesso host del cluster (tipico di un k3d/minikube locale). Su un cluster
+          # Talos multi-nodo l'immagine deve essere raggiungibile da qualunque nodo,
+          # quindi ora viene tirata da GHCR con IfNotPresent.
+          image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
+          imagePullPolicy: {{ .Values.frontend.imagePullPolicy }}
+          ports:
+            - containerPort: 80

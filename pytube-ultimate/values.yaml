@@ -1,0 +1,60 @@
+# ---------------------------------------------------------------------------
+# Immagini: ora arrivano da GHCR (GitHub Container Registry), il registro
+# Docker offerto gratuitamente da GitHub e collegato ai tuoi repository BE/FE.
+# Sostituisci "carrimassimiliano" con il tuo owner/organizzazione GitHub se diverso.
+# ---------------------------------------------------------------------------
+backend:
+  image:
+    repository: ghcr.io/carrimassimiliano/pytube-backend
+    tag: latest
+  imagePullPolicy: IfNotPresent
+
+frontend:
+  image:
+    repository: ghcr.io/carrimassimiliano/pytube-frontend
+    tag: latest
+  imagePullPolicy: IfNotPresent
+
+# Se rendi PUBBLICI i due package su GHCR (Settings del package su github.com),
+# Talos può scaricarli senza credenziali e puoi lasciare questa lista vuota: []
+# Se invece restano privati, serve un Secret di tipo kubernetes.io/dockerconfigjson
+# con questo stesso nome: creane uno con
+#   kubectl create secret docker-registry ghcr-pull-secret \
+#     --docker-server=ghcr.io --docker-username=<tuo-utente> \
+#     --docker-password=<personal access token con scope read:packages> \
+#     --dry-run=client -o yaml
+# e poi sigillalo con kubeseal, come fai già per gli altri segreti del cluster,
+# committando il SealedSecret risultante accanto a questo chart.
+
+# Nome della StorageClass "local" che hai già su Talos (quella che, a differenza
+# delle PersistentVolume/PersistentVolumeClaim manuali con hostPath del chart
+# originale, crea da sola la directory sul nodo giusto quando nasce una PVC).
+# Verifica il nome esatto con: kubectl get storageclass
+storageClassName: "local-path"
+
+settings:
+  silence_db: "-30dB"
+  silence_duration: "1.5"
+
+
+postgres:
+  db: "pytube_db"
+  storage: 1Gi
+  # Il chart originale metteva replicas: 2 sul Deployment di postgres: con una
+  # sola PVC in ReadWriteOnce (montabile da UN solo pod alla volta) e senza
+  # replica logica configurata, un secondo pod non è "alta affidabilità", è un
+  # secondo Postgres scollegato che litiga per lo stesso storage. Per un
+  # database singolo non clusterizzato il valore corretto è 1.
+  replicas: 1
+
+storage:
+  dataSize: 5Gi
+  backupSize: 5Gi
+
+backup:
+  # Estratti da variabili hardcoded nel CronJob originale (password in chiaro
+  # nel manifest, host "pytube-postgres" che in realtà non corrispondeva al
+  # Service "postgres-service" mai creato dal chart -> il backup non avrebbe
+  # mai funzionato). Ora il CronJob referenzia i valori già definiti sopra.
+  schedule: "*/5 * * * *"
+  retentionDays: 7

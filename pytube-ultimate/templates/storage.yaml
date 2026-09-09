@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-data
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs-csi-pytube
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: nfs-csi-pytube
+provisioner: nfs.csi.k8s.io
+parameters:
+  server: 192.168.1.247
+  share: /mnt/seagate2T
+  subDir: pytube
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+mountOptions:
+  - nfsvers=4.1
