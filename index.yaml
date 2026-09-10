@@ -13,7 +13,7 @@ entries:
       licenses: Apache-2.0
     apiVersion: v2
     appVersion: 2024.6.29
-    created: "2026-09-10T18:18:31.239691125+02:00"
+    created: "2026-09-10T19:03:45.453536828+02:00"
     dependencies:
     - name: common
       repository: oci://registry-1.docker.io/bitnamicharts
@@ -42,6 +42,22 @@ entries:
     - https://carrimassimiliano.github.io/helm-charts/minio-14.6.16.tgz
     version: 14.6.16
   pytube-ultimate:
+  - apiVersion: v2
+    appVersion: 2.0.0
+    created: "2026-09-10T19:03:45.453961595+02:00"
+    description: Un'applicazione Kubernetes per scaricare, tagliare e archiviare musica
+      da YouTube.
+    digest: 9777d2855d55d6e5f443960f7a33d701bdc044203b35f281d842ea749e88ba38
+    keywords:
+    - youtube-dl
+    - ffmpeg
+    - pytube
+    - audio-processing
+    name: pytube-ultimate
+    type: application
+    urls:
+    - https://carrimassimiliano.github.io/helm-charts/pytube-ultimate-0.2.7.tgz
+    version: 0.2.7
   - apiVersion: v2
     appVersion: 2.0.0
     created: "2026-09-10T18:18:31.240037317+02:00"
@@ -79,7 +95,7 @@ entries:
       category: DeveloperTools
     apiVersion: v2
     appVersion: 0.37.0
-    created: "2026-09-10T18:18:31.241507082+02:00"
+    created: "2026-09-10T19:03:45.455401736+02:00"
     description: Helm chart for the sealed-secrets controller.
     digest: 4af8cb2b150b83460f15242e36706159cb77f6ba834f79a7bd172cb2f5debc72
     home: https://github.com/bitnami-labs/sealed-secrets
@@ -98,4 +114,4 @@ entries:
     urls:
     - https://carrimassimiliano.github.io/helm-charts/sealed-secrets-2.18.6.tgz
     version: 2.18.6
-generated: "2026-09-10T18:18:31.236027487+02:00"
+generated: "2026-09-10T19:03:45.445950926+02:00"

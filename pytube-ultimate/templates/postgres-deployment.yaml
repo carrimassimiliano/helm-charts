@@ -52,19 +52,16 @@ spec:
         volumeMounts:
         - name: db-storage
           mountPath: /var/lib/postgresql/data
-  
 
   volumeClaimTemplates:
-  - metadata:
-      name: db-storage
-    spec:
-      accessModes: ["ReadWriteOnce"]
-      storageClassName: ""
-      resources:
-        requests:
-          storage: {{ .Values.postgres.storage }}
-      volumeName: pytube-postgres-pv
-
+     - metadata:
+         name: db-storage
+       spec:
+         accessModes: ["ReadWriteOnce"]
+         storageClassName: nfs-csi-pytube
+         resources:
+           requests:
+             storage: {{ .Values.postgres.storage }} 
 ---
 apiVersion: v1
 kind: Service
