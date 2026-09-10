@@ -3,7 +3,7 @@ name: pytube-ultimate
 description: Un'applicazione Kubernetes per scaricare, tagliare e archiviare musica da YouTube.
 type: application
 
-version: 0.2.5
+version: 0.2.6
 appVersion: "2.0.0"
 
 keywords:

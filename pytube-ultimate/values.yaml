@@ -59,3 +59,4 @@ backup:
   schedule: "*/5 * * * *"
   retentionDays: 7
 global: {}
+nfsmount: "/mnt/toshiba2T"
