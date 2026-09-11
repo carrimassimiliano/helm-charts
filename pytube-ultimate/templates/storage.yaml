@@ -1,25 +1,48 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: {{ .Release.Name }}-data
-spec:
-  accessModes:
-    - ReadWriteMany
-  storageClassName: nfs-csi-pytube
-  resources:
-    requests:
-      storage: 5Gi
----
+{{- if .Values.storage.csi_driver_nfs.enabled }}
+# 1. StorageClass per Dati WebApp
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: nfs-csi-pytube
+  name: {{ .Release.Name }}-data-sc
 provisioner: nfs.csi.k8s.io
 parameters:
-  server: 192.168.1.247
-  share: {{ .Values.nfsmount }}
-  subDir: pytube
+  server: {{ .Values.storage.csi_driver_nfs.nfs_server | quote }}
+  share: {{ .Values.storage.csi_driver_nfs.nfs_pytubedata_share | quote }}
+  subDir: {{ .Release.Name | trimSuffix "-ultimate" | quote }}
 reclaimPolicy: Retain
 volumeBindingMode: Immediate
 mountOptions:
   - nfsvers=4.1
+---
+# 2. StorageClass per Backup
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ .Release.Name }}-backup-sc
+provisioner: nfs.csi.k8s.io
+parameters:
+  server: {{ .Values.storage.csi_driver_nfs.nfs_server | quote }}
+  share: {{ .Values.storage.csi_driver_nfs.nfs_backup_share | quote }}
+  subDir: {{ .Release.Name | trimSuffix "-ultimate" | quote }}
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+mountOptions:
+  - nfsvers=4.1
+{{- end }}
+---
+{{- if .Values.postgres.csi_driver_nfs.enabled }}
+# 3. StorageClass per PostgreSQL DB
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ .Release.Name }}-postgres-sc
+provisioner: nfs.csi.k8s.io
+parameters:
+  server: {{ .Values.postgres.csi_driver_nfs.nfs_server | quote }}
+  share: {{ .Values.postgres.csi_driver_nfs.nfs_share | quote }}
+  subDir: {{ .Release.Name | trimSuffix "-ultimate" | quote }}
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+mountOptions:
+  - nfsvers=4.1
+{{- end }}
