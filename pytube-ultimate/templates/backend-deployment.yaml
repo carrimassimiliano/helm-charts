@@ -37,7 +37,7 @@ spec:
             - name: USERS_CONFIG
               valueFrom:
                 secretKeyRef:
-                  name: pytube-ultimate-users-secret
+                  name: {{ .Values.storage.credentials_secret }}
                   key: users-config
             - name: REDIS_HOST
               value: "{{ .Release.Name }}-redis"
@@ -48,7 +48,7 @@ spec:
             - name: DB_PASS
               valueFrom:
                 secretKeyRef:
-                  name: pytube-ultimate-postgres-secret
+                  name: {{ .Values.postgres.credentials_secret }}
                   key: password
             - name: DB_NAME
               value: {{ .Values.postgres.db | quote }}

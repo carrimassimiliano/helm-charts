@@ -34,6 +34,7 @@ settings:
 
 postgres:
   db: "pytube_db"
+  credentials_secret: ""
   storage: 1G
   csi_driver_nfs:
      enabled: true
@@ -52,6 +53,7 @@ postgres:
 storage:
   dataSize: 5Gi
   backupSize: 5Gi
+  credentials_secret: ""
   csi_driver_nfs:
      enabled: true
      nfs_server: ""
