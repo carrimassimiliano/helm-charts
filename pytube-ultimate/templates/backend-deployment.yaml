@@ -48,7 +48,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.postgres.credentials_secret }}
-                  key: password
+                  key: DB_PASS
             - name: DB_NAME
               value: {{ .Values.postgres.db | quote }}
             - name: DB_HOST

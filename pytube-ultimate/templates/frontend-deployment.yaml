@@ -16,12 +16,11 @@ spec:
          runAsNonRoot: true
          runAsUser: {{ .Values.global.uid | default 1000 }}
          runAsGroup: {{ .Values.global.gid | default 1000 }}
+         allowPrivilegeEscalation: false
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      securityContext:
-          allowPrivilegeEscalation: false
 
       containers:
         - name: frontend

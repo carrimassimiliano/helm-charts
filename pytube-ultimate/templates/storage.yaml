@@ -1,5 +1,4 @@
 {{- if .Values.storage.csi_driver_nfs.enabled }}
-# 1. StorageClass per Dati WebApp
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
@@ -8,13 +7,12 @@ provisioner: nfs.csi.k8s.io
 parameters:
   server: {{ .Values.storage.csi_driver_nfs.nfs_server | quote }}
   share: {{ .Values.storage.csi_driver_nfs.nfs_pytubedata_share | quote }}
-  subDir: {{ .Release.Name | trimSuffix "-ultimate" | quote }}
+  subDir: "media"
 reclaimPolicy: Retain
 volumeBindingMode: Immediate
 mountOptions:
   - nfsvers=4.1
 ---
-# 2. StorageClass per Backup
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
@@ -23,15 +21,38 @@ provisioner: nfs.csi.k8s.io
 parameters:
   server: {{ .Values.storage.csi_driver_nfs.nfs_server | quote }}
   share: {{ .Values.storage.csi_driver_nfs.nfs_backup_share | quote }}
-  subDir: {{ .Release.Name | trimSuffix "-ultimate" | quote }}
+  subDir: "backups"
 reclaimPolicy: Retain
 volumeBindingMode: Immediate
 mountOptions:
   - nfsvers=4.1
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-data
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: {{ .Release.Name }}-data-sc
+  resources:
+    requests:
+      storage: {{ .Values.storage.dataSize | default "5Gi" }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-postgres-backup-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: {{ .Release.Name }}-backup-sc
+  resources:
+    requests:
+      storage: {{ .Values.storage.backupSize | default "5Gi" }}
 {{- end }}
 ---
 {{- if .Values.postgres.csi_driver_nfs.enabled }}
-# 3. StorageClass per PostgreSQL DB
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
@@ -40,7 +61,7 @@ provisioner: nfs.csi.k8s.io
 parameters:
   server: {{ .Values.postgres.csi_driver_nfs.nfs_server | quote }}
   share: {{ .Values.postgres.csi_driver_nfs.nfs_share | quote }}
-  subDir: {{ .Release.Name | trimSuffix "-ultimate" | quote }}
+  subDir: "pgdata"
 reclaimPolicy: Retain
 volumeBindingMode: Immediate
 mountOptions:
