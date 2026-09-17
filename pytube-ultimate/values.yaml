@@ -33,6 +33,7 @@ settings:
 
 
 postgres:
+  user: "postgres"
   db: "pytube_db"
   credentials_secret: ""
   storage: 1G
