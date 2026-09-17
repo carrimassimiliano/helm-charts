@@ -15,7 +15,6 @@ spec:
     spec:
       terminationGracePeriodSeconds: 60
       securityContext:
-        fsGroup: 999
       initContainers:
       - name: fix-permissions
         image: busybox
@@ -89,7 +88,6 @@ spec:
           securityContext:
             runAsUser: 999
             runAsGroup: 999
-            fsGroup: 999
           initContainers:
           - name: fix-permissions
             image: busybox

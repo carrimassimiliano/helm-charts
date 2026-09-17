@@ -1,0 +1,115 @@
+name: Helm Chart Auto-Package
+
+# Si attiva ad ogni push su main che tocca un Chart.yaml, i template o i values
+# di una qualsiasi cartella chart (non serve indicare il nome "pytube-ultimate":
+# lo script sotto trova da solo QUALE cartella è cambiata).
+
+
+
+# Perche non incrementera subito 2.0.0 in 2.0.1?
+# Perché lo script controlla l'esistenza del file .tgz corrispondente prima di decidere se incrementare.
+# 
+# Ecco la logica passo-passo di cosa succede quando cambi a mano la versione in 2.0.0:
+# 1. Tu scrivi version: 2.0.0 dentro il file Chart.yaml e fai il git push.
+# 2. La pipeline parte e calcola il nome del file atteso: pytube-2.0.0.tgz.
+# 3. Lo script esegue il controllo if [ -f "$TGZ_FILE" ] ("Il file pytube-2.0.0.tgz esiste già nel repository?").
+# 4. Poiché è la prima volta che usi la versione 2.0.0, quel file .tgz non esiste.
+# 5. Di conseguenza, lo script salta l'incremento automatico ed esegue subito helm package, creando il pacchetto pytube-2.0.0.tgz.
+# 
+# Cosa succede alla modifica successiva?
+# Quando farai un altro git push senza toccare Chart.yaml:
+# 1. Il file Chart.yaml ha ancora version: 2.0.0.
+# 2. La pipeline calcola pytube-2.0.0.tgz.
+# 3. Questa volta il file .tgz esiste già (perché creato nel push precedente!).
+# 4. L'if restituisce true, lo script capisce che non hai cambiato la versione a mano e la incrementa in 2.0.1.
+
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**/Chart.yaml'
+      - '**/templates/**'
+      - '**/values.yaml'
+
+# Serve per poter fare "git push" dal workflow stesso verso il repo
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # storico completo, serve per il git diff qui sotto
+
+      - name: Installa Helm
+        uses: azure/setup-helm@v4
+
+      - name: Individua ed elabora i chart modificati
+        id: process
+        run: |
+          set -e
+
+          # github.event.before è il commit prima della push; se è la prima push
+          # in assoluto vale tutto zeri, in quel caso confrontiamo con HEAD~1
+          BEFORE="${{ github.event.before }}"
+          if [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || [ -z "$BEFORE" ]; then
+            BEFORE=$(git rev-parse HEAD~1 2>/dev/null || echo "HEAD")
+          fi
+
+          git diff --name-only "$BEFORE" "${{ github.sha }}" > /tmp/changed_files.txt
+          echo "File modificati in questa push:"
+          cat /tmp/changed_files.txt
+
+          CHANGED_ANY=false
+
+          # Cerca tutti i Chart.yaml nel repo (ognuno definisce una "cartella chart")
+          for chart_yaml in $(find . -name "Chart.yaml" -not -path "./.git/*"); do
+            chart_dir=$(dirname "$chart_yaml")
+            chart_dir_rel="${chart_dir#./}"
+
+            # Salta questo chart se nessuno dei file modificati sta sotto la sua cartella
+            if ! grep -q "^${chart_dir_rel}/" /tmp/changed_files.txt; then
+              continue
+            fi
+
+            echo "### Chart modificato: $chart_dir_rel"
+            CHANGED_ANY=true
+
+            CHART_NAME=$(grep -E '^name:' "$chart_yaml" | head -1 | awk '{print $2}')
+            CURRENT_VERSION=$(grep -E '^version:' "$chart_yaml" | head -1 | awk '{print $2}')
+            TGZ_FILE="${CHART_NAME}-${CURRENT_VERSION}.tgz"
+
+            # Se il .tgz per questa versione esiste già, vuol dire che la version
+            # in Chart.yaml non è stata alzata manualmente: la incrementiamo da soli
+            # (bump della "patch", cioè l'ultimo numero in X.Y.Z secondo il semantic versioning)
+            if [ -f "$TGZ_FILE" ]; then
+              echo "Versione $CURRENT_VERSION già pubblicata: incremento automatico della patch"
+              IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+              NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))"
+              sed -i "s/^version: .*/version: ${NEW_VERSION}/" "$chart_yaml"
+              CURRENT_VERSION=$NEW_VERSION
+              echo "Nuova versione: $NEW_VERSION"
+            fi
+
+            helm package "$chart_dir" -d .
+          done
+
+          echo "changed=$CHANGED_ANY" >> "$GITHUB_OUTPUT"
+
+      - name: Rigenera index.yaml
+        if: steps.process.outputs.changed == 'true'
+        run: |
+          helm repo index . --url "https://raw.githubusercontent.com/${{ github.repository }}/main" --merge index.yaml
+
+      - name: Commit e push
+        if: steps.process.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff --staged --quiet || git commit -m "chore: pacchettizza chart e aggiorna index.yaml [skip ci]"
+          git push

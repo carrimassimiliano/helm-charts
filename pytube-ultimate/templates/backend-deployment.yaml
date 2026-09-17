@@ -18,7 +18,6 @@ spec:
          runAsNonRoot: true
          runAsUser: {{ .Values.global.uid | default 1000 }}
          runAsGroup: {{ .Values.global.gid | default 1000 }}
-         fsGroup: {{ .Values.global.gid | default 1000 }}
 
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
