@@ -13,7 +13,7 @@ entries:
       licenses: Apache-2.0
     apiVersion: v2
     appVersion: 2024.6.29
-    created: "2026-09-17T22:48:18.796053907Z"
+    created: "2026-09-17T22:54:22.125475762Z"
     dependencies:
     - name: common
       repository: oci://registry-1.docker.io/bitnamicharts
@@ -44,7 +44,23 @@ entries:
   pytube-ultimate:
   - apiVersion: v2
     appVersion: 2.0.0
-    created: "2026-09-17T22:48:18.796424534Z"
+    created: "2026-09-17T22:54:22.126225647Z"
+    description: Un'applicazione Kubernetes per scaricare, tagliare e archiviare musica
+      da YouTube.
+    digest: 5c6b740f1804abc316752251b0d41a4d5b66cf75e06c80ea33786aa396ebe583
+    keywords:
+    - youtube-dl
+    - ffmpeg
+    - pytube
+    - audio-processing
+    name: pytube-ultimate
+    type: application
+    urls:
+    - https://raw.githubusercontent.com/carrimassimiliano/helm-charts/main/pytube-ultimate-0.2.11.tgz
+    version: 0.2.11
+  - apiVersion: v2
+    appVersion: 2.0.0
+    created: "2026-09-17T22:54:22.125901951Z"
     description: Un'applicazione Kubernetes per scaricare, tagliare e archiviare musica
       da YouTube.
     digest: 1d695a24ce588cb14b1f9548fdb016fb0d2b4097eb9b5653bdc31f1a2b96ef47
@@ -60,7 +76,7 @@ entries:
     version: 0.2.10
   - apiVersion: v2
     appVersion: 2.0.0
-    created: "2026-09-17T22:48:18.797286429Z"
+    created: "2026-09-17T22:54:22.1271876Z"
     description: Un'applicazione Kubernetes per scaricare, tagliare e archiviare musica
       da YouTube.
     digest: 4a2bedb0b357549262bfd1210acb690f283e5856c60ec7fa09d533ccdc8bbf81
@@ -76,7 +92,7 @@ entries:
     version: 0.2.9
   - apiVersion: v2
     appVersion: 2.0.0
-    created: "2026-09-17T22:48:18.796998796Z"
+    created: "2026-09-17T22:54:22.126892798Z"
     description: Un'applicazione Kubernetes per scaricare, tagliare e archiviare musica
       da YouTube.
     digest: 1a686642d7266d0bc1046839b35ef474d1d4f0f3c95a384c69f7fa59067b8e4a
@@ -92,7 +108,7 @@ entries:
     version: 0.2.8
   - apiVersion: v2
     appVersion: 2.0.0
-    created: "2026-09-17T22:48:18.796701829Z"
+    created: "2026-09-17T22:54:22.126554761Z"
     description: Un'applicazione Kubernetes per scaricare, tagliare e archiviare musica
       da YouTube.
     digest: 9777d2855d55d6e5f443960f7a33d701bdc044203b35f281d842ea749e88ba38
@@ -143,7 +159,7 @@ entries:
       category: DeveloperTools
     apiVersion: v2
     appVersion: 0.37.0
-    created: "2026-09-17T22:48:18.798868782Z"
+    created: "2026-09-17T22:54:22.128606128Z"
     description: Helm chart for the sealed-secrets controller.
     digest: 4af8cb2b150b83460f15242e36706159cb77f6ba834f79a7bd172cb2f5debc72
     home: https://github.com/bitnami-labs/sealed-secrets
@@ -162,4 +178,4 @@ entries:
     urls:
     - https://raw.githubusercontent.com/carrimassimiliano/helm-charts/main/sealed-secrets-2.18.6.tgz
     version: 2.18.6
-generated: "2026-09-17T22:48:18.792659242Z"
+generated: "2026-09-17T22:54:22.121019157Z"
