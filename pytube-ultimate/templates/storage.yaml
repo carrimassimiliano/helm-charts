@@ -7,7 +7,7 @@ provisioner: nfs.csi.k8s.io
 parameters:
   server: {{ .Values.storage.csi_driver_nfs.nfs_server | quote }}
   share: {{ .Values.storage.csi_driver_nfs.nfs_pytubedata_share | quote }}
-  subDir: "media"
+  subDir: "."
 reclaimPolicy: Retain
 volumeBindingMode: Immediate
 mountOptions:
@@ -21,7 +21,7 @@ provisioner: nfs.csi.k8s.io
 parameters:
   server: {{ .Values.storage.csi_driver_nfs.nfs_server | quote }}
   share: {{ .Values.storage.csi_driver_nfs.nfs_backup_share | quote }}
-  subDir: "backups"
+  subDir: "."
 reclaimPolicy: Retain
 volumeBindingMode: Immediate
 mountOptions:
@@ -61,7 +61,7 @@ provisioner: nfs.csi.k8s.io
 parameters:
   server: {{ .Values.postgres.csi_driver_nfs.nfs_server | quote }}
   share: {{ .Values.postgres.csi_driver_nfs.nfs_share | quote }}
-  subDir: "pgdata"
+  subDir: "."
 reclaimPolicy: Retain
 volumeBindingMode: Immediate
 mountOptions:
