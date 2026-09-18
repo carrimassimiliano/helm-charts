@@ -5,7 +5,11 @@
 # ---------------------------------------------------------------------------
 backend:
   image:
-    repository: ghcr.io/carrimassimiliano/pytube-backend
+    # FIX: era "pytube-backend", diverso dal repository realmente usato
+    # nell'overlay ("pytube-app"). L'overlay vince comunque per precedenza
+    # Helm, ma allineare il default evita confusione a chi guarda solo il
+    # chart pubblicato o lo usa senza overlay.
+    repository: ghcr.io/carrimassimiliano/pytube-app
     tag: latest
   imagePullPolicy: IfNotPresent
 
@@ -15,40 +19,21 @@ frontend:
     tag: latest
   imagePullPolicy: IfNotPresent
 
-# Se rendi PUBBLICI i due package su GHCR (Settings del package su github.com),
-# Talos può scaricarli senza credenziali e puoi lasciare questa lista vuota: []
-# Se invece restano privati, serve un Secret di tipo kubernetes.io/dockerconfigjson
-# con questo stesso nome: creane uno con
-#   kubectl create secret docker-registry ghcr-pull-secret \
-#     --docker-server=ghcr.io --docker-username=<tuo-utente> \
-#     --docker-password=<personal access token con scope read:packages> \
-#     --dry-run=client -o yaml
-# e poi sigillalo con kubeseal, come fai già per gli altri segreti del cluster,
-# committando il SealedSecret risultante accanto a questo chart.
-
- 
 settings:
   silence_db: "-30dB"
   silence_duration: "1.5"
-
 
 postgres:
   user: "postgres"
   db: "pytube_db"
   credentials_secret: ""
-  storage: 1G
+  # FIX: era "1G" (unità SI, decimale) mentre l'overlay usa "1Gi" (unità
+  # binaria) — differenza di circa il 7%. Allineato per coerenza.
+  storage: 1Gi
   csi_driver_nfs:
      enabled: true
      nfs_server: ""
      nfs_share: ""
-     
-
-
-  # Il chart originale metteva replicas: 2 sul Deployment di postgres: con una
-  # sola PVC in ReadWriteOnce (montabile da UN solo pod alla volta) e senza
-  # replica logica configurata, un secondo pod non è "alta affidabilità", è un
-  # secondo Postgres scollegato che litiga per lo stesso storage. Per un
-  # database singolo non clusterizzato il valore corretto è 1.
   replicas: 1
 
 storage:
@@ -62,10 +47,6 @@ storage:
      nfs_pytubedata_share: ""
 
 backup:
-  # nel manifest, host "pytube-postgres" che in realtà non corrispondeva al
-  # Service "postgres-service" mai creato dal chart -> il backup non avrebbe
-  # mai funzionato). Ora il CronJob referenzia i valori già definiti sopra.
   schedule: "*/5 * * * *"
   retentionDays: 7
 global: {}
-
