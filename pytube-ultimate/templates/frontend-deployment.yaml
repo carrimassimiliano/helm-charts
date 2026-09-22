@@ -33,4 +33,4 @@ spec:
           image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
           imagePullPolicy: {{ .Values.frontend.imagePullPolicy }}
           ports:
-            - containerPort: 80
+            - containerPort: 8080
