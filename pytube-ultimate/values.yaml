@@ -39,7 +39,14 @@ postgres:
 storage:
   dataSize: 5Gi
   backupSize: 5Gi
-  credentials_secret: ""
+  credentials_secret: "name_of_the_secret_to_be_created"
+  credentials:
+    - username: user1
+      password: "bcrypted_passwd"
+      folder: user1_data
+    - username: user2
+      password: "bcrypted_passwd"
+      folder: user2_data
   csi_driver_nfs:
      enabled: true
      nfs_server: ""
