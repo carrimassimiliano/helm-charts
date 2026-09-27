@@ -11,7 +11,7 @@ backend:
     # chart pubblicato o lo usa senza overlay.
     repository: ghcr.io/carrimassimiliano/pytube-app
     tag: latest
-  imagePullPolicy: IfNotPresent
+  imagePullPolicy: Always
 
 frontend:
   image:
