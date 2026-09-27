@@ -17,7 +17,8 @@ frontend:
   image:
     repository: ghcr.io/carrimassimiliano/pytube-frontend
     tag: latest
-  imagePullPolicy: IfNotPresent
+  #imagePullPolicy: IfNotPresent
+  imagePullPolicy: Always
 
 settings:
   silence_db: "-30dB"
