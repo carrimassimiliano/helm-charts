@@ -10,13 +10,13 @@ backend:
     # Helm, ma allineare il default evita confusione a chi guarda solo il
     # chart pubblicato o lo usa senza overlay.
     repository: ghcr.io/carrimassimiliano/pytube-app
-    tag: feature/2.0.0-re-algo
+    tag: re-algo
   imagePullPolicy: Always
 
 frontend:
   image:
     repository: ghcr.io/carrimassimiliano/pytube-frontend
-    tag: feature/2.0.0-re-algo
+    tag: re-algo
   #imagePullPolicy: IfNotPresent
   imagePullPolicy: Always
 
